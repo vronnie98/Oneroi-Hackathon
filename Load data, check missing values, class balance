@@ -1,13 +1,13 @@
 import pandas as pd
 
-# Load all files 
-hh_test   = pd.read_csv('test_households.csv', sep='\t')
-pers_test  = pd.read_csv('test_persons.csv', sep='\t')
-trips_test = pd.read_csv('test_trips.csv', sep='\t')
+# Load all files - using comma separator
+hh_test    = pd.read_csv('test_households.csv', sep=',')
+pers_test  = pd.read_csv('test_persons.csv', sep=',')
+trips_test = pd.read_csv('test_trips.csv', sep=',')
 
-hh_train   = pd.read_csv('train_val_households.csv', sep='\t')
-pers_train  = pd.read_csv('train_val_persons.csv', sep='\t')
-trips_train = pd.read_csv('train_val_trips.csv', sep='\t')
+hh_train   = pd.read_csv('train_val_households.csv', sep=',')
+pers_train = pd.read_csv('train_val_persons.csv', sep=',')
+trips_train = pd.read_csv('train_val_trips.csv', sep=',')
 
 # Merge train: trips + persons + households
 train = trips_train.merge(pers_train, on=['persid','hhid'], how='left')
