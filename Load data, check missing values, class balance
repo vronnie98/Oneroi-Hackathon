@@ -1,0 +1,25 @@
+import pandas as pd
+
+# Load all files 
+hh_test   = pd.read_csv('test_households.csv', sep='\t')
+pers_test  = pd.read_csv('test_persons.csv', sep='\t')
+trips_test = pd.read_csv('test_trips.csv', sep='\t')
+
+hh_train   = pd.read_csv('train_val_households.csv', sep='\t')
+pers_train  = pd.read_csv('train_val_persons.csv', sep='\t')
+trips_train = pd.read_csv('train_val_trips.csv', sep='\t')
+
+# Merge train: trips + persons + households
+train = trips_train.merge(pers_train, on=['persid','hhid'], how='left')
+train = train.merge(hh_train, on='hhid', how='left')
+
+# Merge test: same structure
+test = trips_test.merge(pers_test, on=['persid','hhid'], how='left')
+test = test.merge(hh_test, on='hhid', how='left')
+
+print("Train shape:", train.shape)
+print("Test shape:", test.shape)
+print("\nTarget distribution:")
+print(train['mode'].value_counts())
+print("\nMissing values in train:")
+print(train.isnull().sum()[train.isnull().sum() > 0])
