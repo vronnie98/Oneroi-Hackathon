@@ -27,7 +27,12 @@ if has_train:
     train_persons = pd.read_csv("train_val_persons.csv")
     train_trips = pd.read_csv("train_val_trips.csv")
     train = train_trips.merge(train_persons, on=["persid", "hhid"], how="left") \
-        .merge(train_households, on="hhid", how="left")
+        .merge(train_households, on="hhid", how="left", suffixes=('', '_hh'))
+
+    # Safe drop
+    if 'travdow_hh' in train.columns:
+        train = train.drop(columns=['travdow_hh'])
+
 else:
     print("Warning: Train data missing. Skipping.")
 
@@ -37,13 +42,15 @@ if has_test:
     test_persons = pd.read_csv("test_persons.csv")
     test_trips = pd.read_csv("test_trips.csv")
     test = test_trips.merge(test_persons, on=["persid", "hhid"], how="left") \
-        .merge(test_households, on="hhid", how="left")
+        .merge(test_households, on="hhid", how="left", suffixes=('', '_hh'))
+
+    # Safe drop
+    if 'travdow_hh' in test.columns:
+        test = test.drop(columns=['travdow_hh'])
+
 else:
     print("Warning: Test data missing. Skipping.")
 
-#drop duplicate travdow (identical in both persons and households)
-train = train.drop(columns=['travdow_hh'])
-test  = test.drop(columns=['travdow_hh'])
 
 # ==========================================
 # 2. Missing Value Handling
