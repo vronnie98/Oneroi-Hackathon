@@ -62,7 +62,7 @@ def load_and_merge():
 
 # =========================================================
 # 2. Missing Value Handling
-#    用 train 的统计量填充 train/test
+#    Use the training-set statistic to fill the train/test sets
 # =========================================================
 def fill_missing(train, test):
     print("Handling missing values...")
@@ -115,7 +115,6 @@ def logical_quality_check(df):
 
 # =========================================================
 # 4. Role 2 static feature engineering
-#    这里不做 target-dependent 的 time_of_day
 # =========================================================
 def extract_age_median(age_str):
     if pd.isna(age_str) or age_str == "Missing":
@@ -155,8 +154,6 @@ def static_feature_engineering(df):
         ).astype(int)
         df["veh_per_driver"] = df["totalvehs"] / (has_licence + 0.001)
 
-    # 可以保留 speed_kmh，因为它没有用 target
-    # 删除明显冗余列
     cols_to_drop = ["activities", "starthour", "arrhour", "travtime", "homeregion_ASGS"]
     df.drop(columns=[c for c in cols_to_drop if c in df.columns], inplace=True)
 
@@ -165,10 +162,10 @@ def static_feature_engineering(df):
 
 # =========================================================
 # 5. Fold-safe time_of_day
-#    只用当前 train fold 的信息来计算分箱边界
+#    Only used the information of train fold to calculate the boundary of binning
 # =========================================================
 def compute_time_bin_edges(train_fold):
-    # 早高峰：public transport 上午出发时间分位数
+    # Morning peak：quantiles of public transport departure times in the morning
     pub_am_mask = (
         (train_fold[TARGET_COL] == "PUBLICTRANSPORT") &
         (train_fold["startime"] < 720)
@@ -177,7 +174,7 @@ def compute_time_bin_edges(train_fold):
     am_peak_start = pub_am_times.quantile(0.15) if not pub_am_times.empty else 390
     am_peak_end = pub_am_times.quantile(0.85) if not pub_am_times.empty else 660
 
-    # 晚高峰：public transport 下午出发时间分位数
+    # Evening peak：quantiles of public transport departure times in the afternoon
     pub_pm_mask = (
         (train_fold[TARGET_COL] == "PUBLICTRANSPORT") &
         (train_fold["startime"] >= 720)
@@ -186,7 +183,7 @@ def compute_time_bin_edges(train_fold):
     pm_peak_start = pub_pm_times.quantile(0.15) if not pub_pm_times.empty else 780
     pm_peak_end = pub_pm_times.quantile(0.85) if not pub_pm_times.empty else 1080
 
-    # 学校接送高峰：Education 目的下午出发时间分位数
+    # School drop-off and pick-up peak hours：quantiles of afternoon departure times for Education-related trips.
     if "trippurp" in train_fold.columns:
         edu_pm_mask = (
             (train_fold["trippurp"] == "Education") &
@@ -425,7 +422,6 @@ def main():
     train = static_feature_engineering(train)
     test = static_feature_engineering(test)
 
-    # 这里不提前做 time_of_day，留到每个 fold 里做
     result = run_groupkfold_lgb(train, test)
     save_outputs(train, test, result)
 
