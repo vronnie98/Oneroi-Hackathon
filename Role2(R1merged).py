@@ -41,6 +41,10 @@ if has_test:
 else:
     print("Warning: Test data missing. Skipping.")
 
+#drop duplicate travdow (identical in both persons and households)
+train = train.drop(columns=['travdow_hh'])
+test  = test.drop(columns=['travdow_hh'])
+
 # ==========================================
 # 2. Missing Value Handling
 # ==========================================
@@ -254,5 +258,6 @@ if has_test:
     X_test, df_tripid = prepare_for_model(test, is_train=False)
     test.to_csv("processed_test_wide.csv", index=False)
     print("Test dataset saved: processed_test_wide.csv")
+
 
 print("Data processing pipeline completed.")
